@@ -20,4 +20,4 @@ print(calculator.invoke('25 * (5 + 3)')) # test amaçlı bir örnek
 # langchain formatına uygun hale getirelim
 calculator_tool = calculator
 
-print(calculator_tool.invoke('25 * (3 + 3)'))
+#print(calculator_tool.invoke('25 * (3 + 3)'))
