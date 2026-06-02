@@ -93,10 +93,14 @@ pip install langchain langchain-google-genai google-generativeai langchain-commu
 import os
 from dotenv import load_dotenv
 from langchain_community.utilities import SerpAPIWrapper # web search
+from langchain.memory import ConversationBufferMemory # memory tool için
 
 # .env dosyasından API anahtarlarını yükle
 load_dotenv()
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
 # Tool 1: SerpAPI Web Search Tool
-search = SerpAPIWrapper(serpapi_api_key=SERPAPI_API_KEY) #
+search = SerpAPIWrapper(serpapi_api_key=SERPAPI_API_KEY) 
+
+# Tool 2: Conversation Memory
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
