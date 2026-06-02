@@ -89,3 +89,14 @@ Kurulumlar
 
 pip install langchain langchain-google-genai google-generativeai langchain-community faiss-cpu python-dotenv serpapi streamlit google-search-results pypdf sentence-transformers fastapi uvicorn requests
 """
+
+import os
+from dotenv import load_dotenv
+from langchain_community.utilities import SerpAPIWrapper # web search
+
+# .env dosyasından API anahtarlarını yükle
+load_dotenv()
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
+
+# Tool 1: SerpAPI Web Search Tool
+search = SerpAPIWrapper(serpapi_api_key=SERPAPI_API_KEY) #
