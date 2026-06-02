@@ -46,5 +46,46 @@ Kullancılacak Olan Tool'lar:
         - Amaç: Konuşma geçmişini hatırlamak ve bağlamlı bir sohbet deneyimi sağlamak.
         - Langchain'in ConversationBufferMemory sınıfı kullanılarak, ajan önceki konuşmaları hatırlayabilir ve bu bilgiyi yeni sorulara yanıt verirken kullanabilir.
 
-        
+
+Plan/Program Akış Şeması:
+    - Başlangıç: api anahtarlarının oluşturulması ve okunması
+    - Toolların hazırlanması
+        - her bir tool için ayrı .py dosyası oluşturulacak
+    - Ajan oluşturma
+        - ajanı tanımla ve toolları ajana yani llme bağla
+    - Hafıza yönetimi
+        - kullanıcıya özel memory nesnesi oluşturulur
+        - her mesaj sonunda hafızada güncellenir
+    - Fast API Katmanı
+        - /ask endpointi üzerinden json mesaj alınır
+    - İstemci katmanı (client.py)
+        - request modülünü kullanarak /ask endpointine istek gönderir
+    - Arayüz katmanı (streamlit)
+
+Sistem Çalışma Akışı:
+
+kullanıcı streamit üzerinden sorgu yapar
+FastAPI /ask url
+Agent -> tool seçimi (RAG, calculator, discount, web search, memory)
+Langchain -> tool çağırma + LLM reasoning
+Gemini 2.5 Flash -> cevap üretimi
+Memory -> geçmişi saklama
+Yanıt -> fastapi -> streamlit -> kullanıcıya gösterme
+
+Sonuç: 
+    - Bu proje üretken yapay zeka ajanlarının nasıl bir şekilde düşünebilen sistemler haline geldiğini gösteren bir proje olacak.
+    - Langchain ve gemini entegrasyonu sayesinde
+        - çok araçlı
+        - hafızalı
+        - belge tabanlı
+        - etkileşimli (api, arayüz destekli)
+        - - - - - - - - - - - - - - - - - - - - - - - gerçek hayat
+        - mlops devops (docker, deployment)
+        - monitor
+        - gpu balancing
+    bir yapay zeka ajanı geliştirilmiş olacak.
+
+Kurulumlar
+
+pip install langchain langchain-google-genai google-generativeai langchain-community faiss-cpu python-dotenv serpapi streamlit google-search-results pypdf sentence-transformers fastapi uvicorn requests
 """
