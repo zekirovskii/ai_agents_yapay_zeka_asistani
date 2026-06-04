@@ -8,7 +8,7 @@ import json
 API_URL = "http://127.0.0.1:8000/ask"
 
 # user_id tanımla, aynı kullanıcıy sorgu atmak icin
-USER_ID = "kcy"
+USER_ID = "ysf"
 
 def send_message(message: str):
     payload = {
