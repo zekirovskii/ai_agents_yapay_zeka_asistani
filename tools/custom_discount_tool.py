@@ -16,5 +16,3 @@ def discount_calculator(product_info: str) -> str:
     except Exception as e:
         return f"Hata: Fiyat bulunamadı. {e}"
     
-print(discount_calculator.invoke('Bu ürünün fiyatı 100 TL'))
-

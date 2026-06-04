@@ -15,8 +15,6 @@ def calculator(expression: str) -> str: #expressionu string olarak alır ve sonu
     except Exception as e:
         return f"Error: {e}" 
     
-print(calculator.invoke('25 * (5 + 3)')) # test amaçlı bir örnek
-
 # langchain formatına uygun hale getirelim
 calculator_tool = calculator
 

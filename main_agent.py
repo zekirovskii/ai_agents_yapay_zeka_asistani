@@ -92,15 +92,107 @@ pip install langchain langchain-google-genai google-generativeai langchain-commu
 
 import os
 from dotenv import load_dotenv
-from langchain_community.utilities import SerpAPIWrapper # web search
-from langchain.memory import ConversationBufferMemory # memory tool için
+
+from langchain_classic.agents import initialize_agent, AgentType # ajan tanımlama
+from langchain_core.tools import Tool # tool tanımlama
+from langchain_classic.memory import ConversationBufferMemory # memory tool için
+from langchain_google_genai import ChatGoogleGenerativeAI # google gemini 2.5 flash modeli için
+from serpapi import Client as SerpApiClient # web search
+
+# custom tool'lar
+from tools.rag_tool import create_rag_tool
+from tools.calculator_tool import calculator_tool
+from tools.custom_discount_tool import discount_calculator
 
 # .env dosyasından API anahtarlarını yükle
 load_dotenv()
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# llm yapılandırması
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7, google_api_key=GOOGLE_API_KEY)
 
 # Tool 1: SerpAPI Web Search Tool
-search = SerpAPIWrapper(serpapi_api_key=SERPAPI_API_KEY) 
+search_client = SerpApiClient(api_key=SERPAPI_API_KEY) if SERPAPI_API_KEY else None
+
+def web_search(query: str) -> str:
+    if not search_client:
+        return "Hata: SERPAPI_API_KEY tanımlı değil."
+
+    results = search_client.search({"engine": "google", "q": query, "hl": "tr", "gl": "tr"})
+    organic_results = results.get("organic_results", [])[:3]
+
+    if not organic_results:
+        return "Arama sonucu bulunamadı."
+
+    formatted_results = []
+    for item in organic_results:
+        title = item.get("title", "Başlıksız sonuç")
+        link = item.get("link", "")
+        snippet = item.get("snippet", "")
+        formatted_results.append(f"{title}\n{snippet}\n{link}".strip())
+
+    return "\n\n".join(formatted_results)
 
 # Tool 2: Conversation Memory
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
+# Tool 3: Matematik İşlemler (Calculator)
+
+# Tool 4: İndirim Hesaplama (Discount Tool)
+
+# Tool 5: RAG Tool (PDF'den bilgi çekme)
+rag_tool = create_rag_tool("data/musteri_destek.pdf", llm)
+
+# Tüm tool'ları bir liste halinde topla
+tools = [
+    Tool(
+        name="Web Search",
+        func=web_search,
+        description="Google araması yaparak güncel bilgi sağlar. Soruya uygun anahtar kelimelerle arama yapar ve sonuçları döndürür."
+    ),
+    calculator_tool,
+    discount_calculator,
+    rag_tool
+]   
+
+# ajan oluşturma (zero shot ReAct)
+
+agent = initialize_agent(
+    tools = tools, 
+    llm=llm, 
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, 
+    verbose=True, 
+    handle_parsing_errors=True
+)
+
+# örnek kullanım 
+
+if __name__ == "__main__":
+    print("Ajan hazır! Konuşmaya başlayabilirsiniz.")
+
+    while True:
+        user_input = input("Siz: ")
+        if user_input.lower() in ["exit","q","çık"]:
+            break
+
+        chat_history = "\n".join(
+            [f"Kullanıcı: {msg.content}" if msg.type == "human" else f"Asistan: {msg.content}"for msg in memory.chat_memory.messages]
+        )
+
+        prompt_with_memory = f"{chat_history}\nKullanıcı: {user_input}\nAsistan:"
+        response = agent.run(prompt_with_memory)
+
+        # yanıtı hafızaya kaydet
+        memory.chat_memory.add_user_message(user_input)
+        memory.chat_memory.add_ai_message(response)
+        print(f"Ajan: {response}\n")
+
+"""
+- Greeting : Merhaba sen kimsin
+- Calculator Tool : bana 15*10 + 33 sorusunun cevabını verebilir misin? 
+- Discount Tool : telefon satmak istiyorum. telefonun fiyatı 5600tl .buna indirim uygula
+- Web Search Tool : bugün kırklarelide hava kaç derece
+- RAG Tool : merhaba bir ürün aldım geri iade edebilir miyim?
+- Memory : şimdiye kadar seninle ne konuştum?
+"""
