@@ -97,7 +97,7 @@ from langchain_classic.agents import initialize_agent, AgentType # ajan tanımla
 from langchain_core.tools import Tool # tool tanımlama
 from langchain_classic.memory import ConversationBufferMemory # memory tool için
 from langchain_google_genai import ChatGoogleGenerativeAI # google gemini 2.5 flash modeli için
-from serpapi import Client as SerpApiClient # web search
+from serpapi import GoogleSearch # web search
 
 # custom tool'lar
 from tools.rag_tool import create_rag_tool
@@ -113,13 +113,20 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.7, google_api_key=GOOGLE_API_KEY)
 
 # Tool 1: SerpAPI Web Search Tool
-search_client = SerpApiClient(api_key=SERPAPI_API_KEY) if SERPAPI_API_KEY else None
-
 def web_search(query: str) -> str:
-    if not search_client:
+    if not SERPAPI_API_KEY:
         return "Hata: SERPAPI_API_KEY tanımlı değil."
 
-    results = search_client.search({"engine": "google", "q": query, "hl": "tr", "gl": "tr"})
+    search = GoogleSearch(
+        {
+            "api_key": SERPAPI_API_KEY,
+            "engine": "google",
+            "q": query,
+            "hl": "tr",
+            "gl": "tr",
+        }
+    )
+    results = search.get_dict()
     organic_results = results.get("organic_results", [])[:3]
 
     if not organic_results:
